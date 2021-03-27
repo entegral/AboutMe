@@ -1,42 +1,66 @@
 package main
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 
+	"github.com/99designs/gqlgen/graphql/playground"
+	"github.com/99designs/gqlgen/handler"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/entegral/aboutme/errors"
+	"github.com/entegral/aboutme/graph/generated"
+	"github.com/entegral/aboutme/graph/resolvers"
 )
 
+
+var ApiGatewayAdapter lambda.Handler
+var ApiGatewayPlayground lambda.Handler
+
 // Response is of type APIGatewayProxyResponse since we're leveraging the
-// AWS Lambda Proxy Request functionality (default behavior)
-//
-// https://serverless.com/framework/docs/providers/aws/events/apigateway/#lambda-proxy-integration
 type Response events.APIGatewayProxyResponse
 
+func init() {
+	schema := generated.NewExecutableSchema(generated.Config{Resolvers: &resolvers.Clients})
+	gqlHandler := handler.GraphQL(schema)
+	// ApiGatewayAdapter = handlerfunc.New(gqlHandler)
+	ApiGatewayAdapter = lambda.NewHandler(gqlHandler)
+	ApiGatewayPlayground = lambda.NewHandler(playground.Handler("Playground", "/"))
+}
+
 // Handler is our lambda handler invoked by the `lambda.Start` function call
-func Handler(ctx context.Context) (Response, error) {
-	var buf bytes.Buffer
+func Handler(ctx context.Context, req events.APIGatewayProxyRequest) (Response, error) {
 
-	body, err := json.Marshal(map[string]interface{}{
-		"message": "Go Serverless v1.0! Your function executed successfully!",
-	})
-	if err != nil {
-		return Response{StatusCode: 404}, err
+	if req.Path =="/" && req.HTTPMethod == "GET" {
+		rsp, err := ApiGatewayPlayground.Invoke(ctx, []byte(req.Body))
+		if errors.Warn("main.Handler.GET", err) {
+			return Response{
+				StatusCode: 500,
+				Body: "internal service error",
+			}, err
+		}
+		return Response{
+			StatusCode: 500,
+			Body: string(rsp),
+		}, nil
+	} else if req.Path == "/query" || req.HTTPMethod == "POST" {
+
+		rsp, err := ApiGatewayAdapter.Invoke(ctx, []byte(req.Body))
+		if errors.Warn("main.Handler.POST", err) {
+			return Response{
+				StatusCode: 500,
+				Body: string(rsp),
+			}, nil 
+		}
+		return Response{
+			StatusCode: 200,
+			Body: string(rsp),
+		}, nil
 	}
-	json.HTMLEscape(&buf, body)
-
-	resp := Response{
-		StatusCode:      200,
-		IsBase64Encoded: false,
-		Body:            buf.String(),
-		Headers: map[string]string{
-			"Content-Type":           "application/json",
-		},
-	}
-
-	return resp, nil
+	
+	return Response{
+		StatusCode: 500,
+		Body: "endpoint only supports GET request on '/' path and POST request on '/query' path",
+	}, nil
 }
 
 func main() {
