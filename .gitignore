@@ -1,2 +1,5 @@
 # Go
 bin
+
+# env
+.envrc
