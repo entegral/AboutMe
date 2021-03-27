@@ -1,0 +1,55 @@
+service: aboutme
+
+frameworkVersion: '2'
+
+provider:
+  name: aws
+  runtime: go1.x
+  stage:  ${opt:stage, env:STAGE}
+  region:  ${opt:region, env:REGION}
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+        - dynamodb:Query
+      Resource: ${env:SERVICE_TABLE_NAME}
+  environment:
+    SERVICE_TABLE_NAME: ${opt:service_table_name, env:SERVICE_TABLE_NAME}
+
+package:
+  exclude:
+    - ./**
+  include:
+    - ./bin/**
+
+functions:
+  hello:
+    handler: bin/lambda
+    events:
+      - httpApi:
+          path: /
+          method: '*'
+
+# you can add CloudFormation resource templates here
+resources:
+ Resources:
+   ServiceTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: ${env:SERVICE_TABLE_NAME}
+      AttributeDefinitions:
+        - AttributeName: pk
+          AttributeType: S
+        - AttributeName: sk
+          AttributeType: S
+      KeySchema:
+        - AttributeName: pk
+          KeyType: HASH
+        - AttributeName: sk
+          KeyType: RANGE
+      ProvisionedThroughput:
+        ReadCapacityUnits: 1
+        WriteCapacityUnits: 1
