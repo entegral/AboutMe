@@ -1,0 +1,6 @@
+type  ContactInfo {
+  email: String!
+  
+  linkedIn: String
+  github: String
+}

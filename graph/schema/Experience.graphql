@@ -1,0 +1,7 @@
+type Experience {
+  start_date: String
+  end_date: String
+  title: String
+  company: String
+  responsibilities: [String]
+}

@@ -1,0 +1,24 @@
+type JSSkills {
+  frameworks: [String]
+  paradigms: [String]
+  aws_services: [String]
+  misc: [String]
+}
+
+type GoSkills {
+  frameworks: [String]
+  paradigms: [String]
+  aws_services: [String]
+  misc: [String]
+}
+
+type PythonSkills {
+  frameworks: [String]
+  misc: [String]
+}
+
+type Skills {
+  JS: JSSkills
+  Go: GoSkills
+  Python: PythonSkills
+}

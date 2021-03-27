@@ -1,0 +1,19 @@
+type Me {
+  # basic info
+  first_name: String!
+  last_name: String!
+  title: String
+  location: String
+  interests: [String]
+  about_me: [String]
+
+  # work history
+  experience: [Experience]
+  example_projects: [Project]
+  skills: Skills
+  contact: ContactInfo
+}
+
+extend type Query {
+  RobbyBruce: Me
+}
