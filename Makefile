@@ -6,5 +6,8 @@ build:
 clean:
 	rm -rf ./bin
 
+local: clean build
+	go run local/server.go
+
 deploy: clean build
 	sls deploy --verbose

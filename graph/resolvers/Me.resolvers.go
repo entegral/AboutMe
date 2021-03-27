@@ -5,14 +5,20 @@ package resolvers
 
 import (
 	"context"
-	"fmt"
 
+	"github.com/entegral/aboutme/errors"
 	"github.com/entegral/aboutme/graph/generated"
 	"github.com/entegral/aboutme/graph/model"
 )
 
 func (r *queryResolver) RobbyBruce(ctx context.Context) (*model.Me, error) {
-	panic(fmt.Errorf("not implemented"))
+	var input model.CompositeKey
+	var m model.Me
+	val, err := input.GetMe("bruce", "robby")
+	if errors.Warn("Error fetching RobbyBruce aboutme data", err) {
+		return &m, err 
+	}
+	return &val, nil
 }
 
 // Query returns generated.QueryResolver implementation.

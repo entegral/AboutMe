@@ -21,7 +21,7 @@ func CreateClients() Clients {
 	return c
 }
 
-func CreateCustomClientConnection(region string, profileName string) Clients {
+func AddCustomClientConnection(region string, profileName string) Clients {
 	sess, err := session.NewSessionWithOptions(session.Options{
 		Profile:           profileName,
 		Config: aws.Config{
@@ -40,6 +40,7 @@ func CreateCustomClientConnection(region string, profileName string) Clients {
 	c.Dynamo = dynamodb.New(sess, cfg)
 	c.SQS = sqs.New(sess, cfg)
 	c.S3 = s3.New(sess, cfg)
+	ClientMap[profileName] = c
 	return c
 }
 
