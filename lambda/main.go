@@ -7,54 +7,57 @@ import (
 	"github.com/99designs/gqlgen/handler"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/awslabs/aws-lambda-go-api-proxy/handlerfunc"
 	"github.com/entegral/aboutme/errors"
 	"github.com/entegral/aboutme/graph/generated"
 	"github.com/entegral/aboutme/graph/resolvers"
+	"github.com/sirupsen/logrus"
 )
+	
 
 
-var ApiGatewayAdapter lambda.Handler
-var ApiGatewayPlayground lambda.Handler
+var ApiGatewayAdapter *handlerfunc.HandlerFuncAdapter
+var ApiGatewayPlayground *handlerfunc.HandlerFuncAdapter
 
 // Response is of type APIGatewayProxyResponse since we're leveraging the
 type Response events.APIGatewayProxyResponse
+type Request events.APIGatewayProxyRequest
 
 func init() {
 	schema := generated.NewExecutableSchema(generated.Config{Resolvers: &resolvers.Clients})
 	gqlHandler := handler.GraphQL(schema)
-	// ApiGatewayAdapter = handlerfunc.New(gqlHandler)
-	ApiGatewayAdapter = lambda.NewHandler(gqlHandler)
-	ApiGatewayPlayground = lambda.NewHandler(playground.Handler("Playground", "/"))
+	ApiGatewayAdapter = handlerfunc.New(gqlHandler)
+	ApiGatewayPlayground = handlerfunc.New(playground.Handler("Playground", "/"))
 }
 
 // Handler is our lambda handler invoked by the `lambda.Start` function call
-func Handler(ctx context.Context, req events.APIGatewayProxyRequest) (Response, error) {
+func Handler(ctx context.Context, req Request) (Response, error) {
+	logrus.WithFields(logrus.Fields{
+		"body": req.Body,
+		"path": req.Path,
+		"method": req.HTTPMethod,
+	}).Warnf("request: %+v", req)
 
 	if req.Path =="/" && req.HTTPMethod == "GET" {
-		rsp, err := ApiGatewayPlayground.Invoke(ctx, []byte(req.Body))
+		logrus.Warnln("inside get route, querying playground")
+		rsp, err := ApiGatewayPlayground.ProxyWithContext(ctx, events.APIGatewayProxyRequest(req))
 		if errors.Warn("main.Handler.GET", err) {
 			return Response{
 				StatusCode: 500,
-				Body: "internal service error",
+				Body: "internal service error:" + err.Error(),
 			}, err
 		}
-		return Response{
-			StatusCode: 500,
-			Body: string(rsp),
-		}, nil
+		return Response(rsp), nil
 	} else if req.Path == "/query" || req.HTTPMethod == "POST" {
 
-		rsp, err := ApiGatewayAdapter.Invoke(ctx, []byte(req.Body))
+		rsp, err := ApiGatewayAdapter.ProxyWithContext(ctx,events.APIGatewayProxyRequest(req))
 		if errors.Warn("main.Handler.POST", err) {
 			return Response{
 				StatusCode: 500,
-				Body: string(rsp),
+				Body: string(rsp.Body),
 			}, nil 
 		}
-		return Response{
-			StatusCode: 200,
-			Body: string(rsp),
-		}, nil
+		return Response(rsp), nil
 	}
 	
 	return Response{

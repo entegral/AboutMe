@@ -15,7 +15,10 @@ provider:
         - dynamodb:UpdateItem
         - dynamodb:DeleteItem
         - dynamodb:Query
-      Resource: ${env:SERVICE_TABLE_NAME}
+      Resource: 
+        - Fn::GetAtt:
+          - ServiceTable
+          - Arn
   environment:
     SERVICE_TABLE_NAME: ${opt:service_table_name, env:SERVICE_TABLE_NAME}
 
@@ -29,9 +32,8 @@ functions:
   graphql:
     handler: bin/lambda
     events:
-      - httpApi:
-          path: /
-          method: '*'
+      - httpApi: '*'
+        payload: '1.0'
 
 # you can add CloudFormation resource templates here
 resources:

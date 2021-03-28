@@ -3,3 +3,6 @@ bin
 
 # env
 .envrc
+
+# serverless
+.serverless
