@@ -15,5 +15,5 @@ type Me {
 }
 
 extend type Query {
-  RobbyBruce: Me
+  about_me: Me
 }

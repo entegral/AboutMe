@@ -95,7 +95,7 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		RobbyBruce func(childComplexity int) int
+		AboutMe func(childComplexity int) int
 	}
 
 	Skills struct {
@@ -106,7 +106,7 @@ type ComplexityRoot struct {
 }
 
 type QueryResolver interface {
-	RobbyBruce(ctx context.Context) (*model.Me, error)
+	AboutMe(ctx context.Context) (*model.Me, error)
 }
 
 type executableSchema struct {
@@ -348,12 +348,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.PythonSkills.Misc(childComplexity), true
 
-	case "Query.RobbyBruce":
-		if e.complexity.Query.RobbyBruce == nil {
+	case "Query.about_me":
+		if e.complexity.Query.AboutMe == nil {
 			break
 		}
 
-		return e.complexity.Query.RobbyBruce(childComplexity), true
+		return e.complexity.Query.AboutMe(childComplexity), true
 
 	case "Skills.Go":
 		if e.complexity.Skills.Go == nil {
@@ -457,7 +457,7 @@ var sources = []*ast.Source{
 }
 
 extend type Query {
-  RobbyBruce: Me
+  about_me: Me
 }
 `, BuiltIn: false},
 	{Name: "graph/schema/Project.graphql", Input: `type Project {
@@ -1587,7 +1587,7 @@ func (ec *executionContext) _PythonSkills_misc(ctx context.Context, field graphq
 	return ec.marshalOString2ᚕᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Query_RobbyBruce(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+func (ec *executionContext) _Query_about_me(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1605,7 +1605,7 @@ func (ec *executionContext) _Query_RobbyBruce(ctx context.Context, field graphql
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().RobbyBruce(rctx)
+		return ec.resolvers.Query().AboutMe(rctx)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3126,7 +3126,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Query")
-		case "RobbyBruce":
+		case "about_me":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
 				defer func() {
@@ -3134,7 +3134,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_RobbyBruce(ctx, field)
+				res = ec._Query_about_me(ctx, field)
 				return res
 			})
 		case "__type":

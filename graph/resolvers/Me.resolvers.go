@@ -11,15 +11,13 @@ import (
 	"github.com/entegral/aboutme/graph/model"
 )
 
-func (r *queryResolver) RobbyBruce(ctx context.Context) (*model.Me, error) {
+func (r *queryResolver) AboutMe(ctx context.Context) (*model.Me, error) {
 	var input model.CompositeKey
-	var m model.Me
 	val, err := input.GetMe("bruce", "robby")
 	if errors.Warn("Error fetching RobbyBruce aboutme data", err) {
-		return &m, err 
+		return nil, err
 	}
-	return &val, nil
-}
+	return val, nil}
 
 // Query returns generated.QueryResolver implementation.
 func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }

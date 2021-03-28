@@ -9,6 +9,9 @@ clean:
 deploy: clean build
 	sls deploy
 
+generate:
+	go run github.com/99designs/gqlgen generate 
+
 local: clean build
 	go run local/server.go
 
