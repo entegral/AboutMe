@@ -21,6 +21,7 @@ provider:
           - Arn
   environment:
     SERVICE_TABLE_NAME: ${opt:service_table_name, env:SERVICE_TABLE_NAME}
+    ADMIN_KEY: ${opt:admin_key, env:ADMIN_KEY}
 
 package:
   exclude:

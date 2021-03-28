@@ -16,6 +16,14 @@ type Experience struct {
 	Responsibilities []*string `json:"responsibilities"`
 }
 
+type ExperienceInput struct {
+	StartDate        *string   `json:"start_date"`
+	EndDate          *string   `json:"end_date"`
+	Title            string    `json:"title"`
+	Company          string    `json:"company"`
+	Responsibilities []*string `json:"responsibilities"`
+}
+
 type GoSkills struct {
 	Frameworks  []*string `json:"frameworks"`
 	Paradigms   []*string `json:"paradigms"`
@@ -46,4 +54,11 @@ type Skills struct {
 	Js     *JSSkills     `json:"JS"`
 	Go     *GoSkills     `json:"Go"`
 	Python *PythonSkills `json:"Python"`
+}
+
+type UpdateMe struct {
+	FirstName string  `json:"first_name"`
+	LastName  string  `json:"last_name"`
+	Title     *string `json:"title"`
+	Location  *string `json:"location"`
 }

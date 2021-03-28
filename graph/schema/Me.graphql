@@ -16,4 +16,18 @@ type Me {
 
 extend type Query {
   about_me: Me
+  about(first_name: String!, last_name: String!): Me
+}
+
+input UpdateMe {
+  first_name: String!
+  last_name: String!
+  title: String
+  location: String
+}
+
+
+
+extend type Mutation {
+  UpdateInfo(key: String!, info: UpdateMe): Me
 }

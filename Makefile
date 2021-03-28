@@ -6,9 +6,6 @@ build:
 clean:
 	rm -rf ./bin
 
-deploy: clean build
-	sls deploy
-
 generate:
 	go run github.com/99designs/gqlgen generate 
 
