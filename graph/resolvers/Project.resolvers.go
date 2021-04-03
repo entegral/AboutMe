@@ -10,10 +10,10 @@ import (
 	"github.com/entegral/aboutme/graph/model"
 )
 
-func (r *mutationResolver) UpdateExperience(ctx context.Context, key string, item *model.ExperienceInput) (*model.Experience, error) {
+func (r *mutationResolver) UpdateProject(ctx context.Context, key string, info *model.ProjectInput) (*model.Project, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) RemoveExperience(ctx context.Context, key string, company *string, title *string) (*model.Experience, error) {
+func (r *mutationResolver) RemoveProject(ctx context.Context, key string, company *string, title *string) (*model.Project, error) {
 	panic(fmt.Errorf("not implemented"))
 }

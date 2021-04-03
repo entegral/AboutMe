@@ -14,20 +14,25 @@ type Me {
   contact: ContactInfo
 }
 
-extend type Query {
-  about_me: Me
-  about(first_name: String!, last_name: String!): Me
+input GetMeInput {
+  first_name: String!
+  last_name: String!
 }
 
-input UpdateMe {
+input UpdateMeInput {
   first_name: String!
   last_name: String!
   title: String
   location: String
+  interests: [String]
+  about_me: [String]
 }
 
-
+extend type Query {
+  about_me: Me
+  about(input: GetMeInput!): Me
+}
 
 extend type Mutation {
-  UpdateInfo(key: String!, info: UpdateMe): Me
+  UpdateInfo(key: String!, info: UpdateMeInput): Me
 }

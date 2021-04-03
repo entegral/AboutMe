@@ -1,0 +1,25 @@
+type Education {
+  start_date: String!
+  end_date: String!
+  institution: String!
+  subject: String!
+  notes: [String]
+}
+
+input EducationInput {
+  first_name: String!
+  last_name: String!
+  start_date: String!
+  end_date: String!
+  institution: String!
+  subject: String!
+  notes: [String]
+}
+
+extend type Mutation {
+  AddEducation(key: String!, info: EducationInput): Education
+  RemoveEducation(
+    first_name: String!
+    last_name: String!
+  ): Education
+}

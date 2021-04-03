@@ -48,6 +48,14 @@ type ComplexityRoot struct {
 		LinkedIn func(childComplexity int) int
 	}
 
+	Education struct {
+		EndDate     func(childComplexity int) int
+		Institution func(childComplexity int) int
+		Notes       func(childComplexity int) int
+		StartDate   func(childComplexity int) int
+		Subject     func(childComplexity int) int
+	}
+
 	Experience struct {
 		Company          func(childComplexity int) int
 		EndDate          func(childComplexity int) int
@@ -84,14 +92,25 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
+		AddEducation     func(childComplexity int, key string, info *model.EducationInput) int
+		RemoveEducation  func(childComplexity int, firstName string, lastName string) int
 		RemoveExperience func(childComplexity int, key string, company *string, title *string) int
 		UpdateExperience func(childComplexity int, key string, item *model.ExperienceInput) int
-		UpdateInfo       func(childComplexity int, key string, info *model.UpdateMe) int
+		UpdateInfo       func(childComplexity int, key string, info *model.UpdateMeInput) int
 	}
 
 	Project struct {
 		DemoLink    func(childComplexity int) int
 		Description func(childComplexity int) int
+		Name        func(childComplexity int) int
+		SourceCode  func(childComplexity int) int
+	}
+
+	ProjectInput struct {
+		DemoLink    func(childComplexity int) int
+		Description func(childComplexity int) int
+		FirstName   func(childComplexity int) int
+		LastName    func(childComplexity int) int
 		Name        func(childComplexity int) int
 		SourceCode  func(childComplexity int) int
 	}
@@ -102,7 +121,7 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		About   func(childComplexity int, firstName string, lastName string) int
+		About   func(childComplexity int, input model.GetMeInput) int
 		AboutMe func(childComplexity int) int
 	}
 
@@ -114,13 +133,15 @@ type ComplexityRoot struct {
 }
 
 type MutationResolver interface {
+	AddEducation(ctx context.Context, key string, info *model.EducationInput) (*model.Education, error)
+	RemoveEducation(ctx context.Context, firstName string, lastName string) (*model.Education, error)
 	UpdateExperience(ctx context.Context, key string, item *model.ExperienceInput) (*model.Experience, error)
 	RemoveExperience(ctx context.Context, key string, company *string, title *string) (*model.Experience, error)
-	UpdateInfo(ctx context.Context, key string, info *model.UpdateMe) (*model.Me, error)
+	UpdateInfo(ctx context.Context, key string, info *model.UpdateMeInput) (*model.Me, error)
 }
 type QueryResolver interface {
 	AboutMe(ctx context.Context) (*model.Me, error)
-	About(ctx context.Context, firstName string, lastName string) (*model.Me, error)
+	About(ctx context.Context, input model.GetMeInput) (*model.Me, error)
 }
 
 type executableSchema struct {
@@ -158,6 +179,41 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.ContactInfo.LinkedIn(childComplexity), true
+
+	case "Education.end_date":
+		if e.complexity.Education.EndDate == nil {
+			break
+		}
+
+		return e.complexity.Education.EndDate(childComplexity), true
+
+	case "Education.institution":
+		if e.complexity.Education.Institution == nil {
+			break
+		}
+
+		return e.complexity.Education.Institution(childComplexity), true
+
+	case "Education.notes":
+		if e.complexity.Education.Notes == nil {
+			break
+		}
+
+		return e.complexity.Education.Notes(childComplexity), true
+
+	case "Education.start_date":
+		if e.complexity.Education.StartDate == nil {
+			break
+		}
+
+		return e.complexity.Education.StartDate(childComplexity), true
+
+	case "Education.subject":
+		if e.complexity.Education.Subject == nil {
+			break
+		}
+
+		return e.complexity.Education.Subject(childComplexity), true
 
 	case "Experience.company":
 		if e.complexity.Experience.Company == nil {
@@ -320,6 +376,30 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Me.Title(childComplexity), true
 
+	case "Mutation.AddEducation":
+		if e.complexity.Mutation.AddEducation == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_AddEducation_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.AddEducation(childComplexity, args["key"].(string), args["info"].(*model.EducationInput)), true
+
+	case "Mutation.RemoveEducation":
+		if e.complexity.Mutation.RemoveEducation == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_RemoveEducation_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.RemoveEducation(childComplexity, args["first_name"].(string), args["last_name"].(string)), true
+
 	case "Mutation.RemoveExperience":
 		if e.complexity.Mutation.RemoveExperience == nil {
 			break
@@ -354,7 +434,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.UpdateInfo(childComplexity, args["key"].(string), args["info"].(*model.UpdateMe)), true
+		return e.complexity.Mutation.UpdateInfo(childComplexity, args["key"].(string), args["info"].(*model.UpdateMeInput)), true
 
 	case "Project.demo_link":
 		if e.complexity.Project.DemoLink == nil {
@@ -384,6 +464,48 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Project.SourceCode(childComplexity), true
 
+	case "ProjectInput.demo_link":
+		if e.complexity.ProjectInput.DemoLink == nil {
+			break
+		}
+
+		return e.complexity.ProjectInput.DemoLink(childComplexity), true
+
+	case "ProjectInput.description":
+		if e.complexity.ProjectInput.Description == nil {
+			break
+		}
+
+		return e.complexity.ProjectInput.Description(childComplexity), true
+
+	case "ProjectInput.first_name":
+		if e.complexity.ProjectInput.FirstName == nil {
+			break
+		}
+
+		return e.complexity.ProjectInput.FirstName(childComplexity), true
+
+	case "ProjectInput.last_name":
+		if e.complexity.ProjectInput.LastName == nil {
+			break
+		}
+
+		return e.complexity.ProjectInput.LastName(childComplexity), true
+
+	case "ProjectInput.name":
+		if e.complexity.ProjectInput.Name == nil {
+			break
+		}
+
+		return e.complexity.ProjectInput.Name(childComplexity), true
+
+	case "ProjectInput.source_code":
+		if e.complexity.ProjectInput.SourceCode == nil {
+			break
+		}
+
+		return e.complexity.ProjectInput.SourceCode(childComplexity), true
+
 	case "PythonSkills.frameworks":
 		if e.complexity.PythonSkills.Frameworks == nil {
 			break
@@ -408,7 +530,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.About(childComplexity, args["first_name"].(string), args["last_name"].(string)), true
+		return e.complexity.Query.About(childComplexity, args["input"].(model.GetMeInput)), true
 
 	case "Query.about_me":
 		if e.complexity.Query.AboutMe == nil {
@@ -508,6 +630,31 @@ var sources = []*ast.Source{
   linkedIn: String
   github: String
 }`, BuiltIn: false},
+	{Name: "graph/schema/Education.graphql", Input: `type Education {
+  start_date: String!
+  end_date: String!
+  institution: String!
+  subject: String!
+  notes: [String]
+}
+
+input EducationInput {
+  first_name: String!
+  last_name: String!
+  start_date: String!
+  end_date: String!
+  institution: String!
+  subject: String!
+  notes: [String]
+}
+
+extend type Mutation {
+  AddEducation(key: String!, info: EducationInput): Education
+  RemoveEducation(
+    first_name: String!
+    last_name: String!
+  ): Education
+}`, BuiltIn: false},
 	{Name: "graph/schema/Experience.graphql", Input: `type Experience {
   start_date: String
   end_date: String
@@ -544,22 +691,27 @@ extend type Mutation {
   contact: ContactInfo
 }
 
-extend type Query {
-  about_me: Me
-  about(first_name: String!, last_name: String!): Me
+input GetMeInput {
+  first_name: String!
+  last_name: String!
 }
 
-input UpdateMe {
+input UpdateMeInput {
   first_name: String!
   last_name: String!
   title: String
   location: String
+  interests: [String]
+  about_me: [String]
 }
 
-
+extend type Query {
+  about_me: Me
+  about(input: GetMeInput!): Me
+}
 
 extend type Mutation {
-  UpdateInfo(key: String!, info: UpdateMe): Me
+  UpdateInfo(key: String!, info: UpdateMeInput): Me
 }
 `, BuiltIn: false},
 	{Name: "graph/schema/Project.graphql", Input: `type Project {
@@ -567,6 +719,15 @@ extend type Mutation {
   source_code: String
   demo_link: String
   description: String
+}
+
+type ProjectInput {
+  first_name: String!
+  last_name: String!
+  name: String!
+  source_code: String
+  demo_link: String
+  description: String  
 }`, BuiltIn: false},
 	{Name: "graph/schema/Skills.graphql", Input: `type JSSkills {
   frameworks: [String]
@@ -587,11 +748,37 @@ type PythonSkills {
   misc: [String]
 }
 
+input JSSkillsInput {
+  first_name: String!
+  last_name: String!
+  frameworks: [String]
+  paradigms: [String]
+  aws_services: [String]
+  misc: [String]
+}
+
+input GoSkillsInput {
+  first_name: String!
+  last_name: String!
+  frameworks: [String]
+  paradigms: [String]
+  aws_services: [String]
+  misc: [String]
+}
+
+input PythonSkillsInput {
+  first_name: String!
+  last_name: String!
+  frameworks: [String]
+  misc: [String]
+}
+
 type Skills {
   JS: JSSkills
   Go: GoSkills
   Python: PythonSkills
 }
+
 `, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
@@ -599,6 +786,54 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 // endregion ************************** generated!.gotpl **************************
 
 // region    ***************************** args.gotpl *****************************
+
+func (ec *executionContext) field_Mutation_AddEducation_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["key"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("key"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["key"] = arg0
+	var arg1 *model.EducationInput
+	if tmp, ok := rawArgs["info"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("info"))
+		arg1, err = ec.unmarshalOEducationInput2ᚖgithubᚗcomᚋentegralᚋaboutmeᚋgraphᚋmodelᚐEducationInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["info"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_RemoveEducation_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["first_name"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("first_name"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["first_name"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["last_name"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("last_name"))
+		arg1, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["last_name"] = arg1
+	return args, nil
+}
 
 func (ec *executionContext) field_Mutation_RemoveExperience_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
@@ -669,10 +904,10 @@ func (ec *executionContext) field_Mutation_UpdateInfo_args(ctx context.Context, 
 		}
 	}
 	args["key"] = arg0
-	var arg1 *model.UpdateMe
+	var arg1 *model.UpdateMeInput
 	if tmp, ok := rawArgs["info"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("info"))
-		arg1, err = ec.unmarshalOUpdateMe2ᚖgithubᚗcomᚋentegralᚋaboutmeᚋgraphᚋmodelᚐUpdateMe(ctx, tmp)
+		arg1, err = ec.unmarshalOUpdateMeInput2ᚖgithubᚗcomᚋentegralᚋaboutmeᚋgraphᚋmodelᚐUpdateMeInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -699,24 +934,15 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 func (ec *executionContext) field_Query_about_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["first_name"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("first_name"))
-		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+	var arg0 model.GetMeInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNGetMeInput2githubᚗcomᚋentegralᚋaboutmeᚋgraphᚋmodelᚐGetMeInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["first_name"] = arg0
-	var arg1 string
-	if tmp, ok := rawArgs["last_name"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("last_name"))
-		arg1, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["last_name"] = arg1
+	args["input"] = arg0
 	return args, nil
 }
 
@@ -855,6 +1081,178 @@ func (ec *executionContext) _ContactInfo_github(ctx context.Context, field graph
 	res := resTmp.(*string)
 	fc.Result = res
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Education_start_date(ctx context.Context, field graphql.CollectedField, obj *model.Education) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Education",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.StartDate, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Education_end_date(ctx context.Context, field graphql.CollectedField, obj *model.Education) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Education",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.EndDate, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Education_institution(ctx context.Context, field graphql.CollectedField, obj *model.Education) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Education",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Institution, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Education_subject(ctx context.Context, field graphql.CollectedField, obj *model.Education) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Education",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Subject, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Education_notes(ctx context.Context, field graphql.CollectedField, obj *model.Education) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Education",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Notes, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*string)
+	fc.Result = res
+	return ec.marshalOString2ᚕᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Experience_start_date(ctx context.Context, field graphql.CollectedField, obj *model.Experience) (ret graphql.Marshaler) {
@@ -1599,6 +1997,84 @@ func (ec *executionContext) _Me_contact(ctx context.Context, field graphql.Colle
 	return ec.marshalOContactInfo2ᚖgithubᚗcomᚋentegralᚋaboutmeᚋgraphᚋmodelᚐContactInfo(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Mutation_AddEducation(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_AddEducation_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().AddEducation(rctx, args["key"].(string), args["info"].(*model.EducationInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.Education)
+	fc.Result = res
+	return ec.marshalOEducation2ᚖgithubᚗcomᚋentegralᚋaboutmeᚋgraphᚋmodelᚐEducation(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_RemoveEducation(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_RemoveEducation_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().RemoveEducation(rctx, args["first_name"].(string), args["last_name"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.Education)
+	fc.Result = res
+	return ec.marshalOEducation2ᚖgithubᚗcomᚋentegralᚋaboutmeᚋgraphᚋmodelᚐEducation(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Mutation_UpdateExperience(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -1702,7 +2178,7 @@ func (ec *executionContext) _Mutation_UpdateInfo(ctx context.Context, field grap
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().UpdateInfo(rctx, args["key"].(string), args["info"].(*model.UpdateMe))
+		return ec.resolvers.Mutation().UpdateInfo(rctx, args["key"].(string), args["info"].(*model.UpdateMeInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1847,6 +2323,207 @@ func (ec *executionContext) _Project_description(ctx context.Context, field grap
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _ProjectInput_first_name(ctx context.Context, field graphql.CollectedField, obj *model.ProjectInput) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "ProjectInput",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.FirstName, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _ProjectInput_last_name(ctx context.Context, field graphql.CollectedField, obj *model.ProjectInput) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "ProjectInput",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.LastName, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _ProjectInput_name(ctx context.Context, field graphql.CollectedField, obj *model.ProjectInput) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "ProjectInput",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Name, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _ProjectInput_source_code(ctx context.Context, field graphql.CollectedField, obj *model.ProjectInput) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "ProjectInput",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.SourceCode, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _ProjectInput_demo_link(ctx context.Context, field graphql.CollectedField, obj *model.ProjectInput) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "ProjectInput",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.DemoLink, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _ProjectInput_description(ctx context.Context, field graphql.CollectedField, obj *model.ProjectInput) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "ProjectInput",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Description, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _PythonSkills_frameworks(ctx context.Context, field graphql.CollectedField, obj *model.PythonSkills) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -1968,7 +2645,7 @@ func (ec *executionContext) _Query_about(ctx context.Context, field graphql.Coll
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().About(rctx, args["first_name"].(string), args["last_name"].(string))
+		return ec.resolvers.Query().About(rctx, args["input"].(model.GetMeInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3236,6 +3913,74 @@ func (ec *executionContext) ___Type_ofType(ctx context.Context, field graphql.Co
 
 // region    **************************** input.gotpl *****************************
 
+func (ec *executionContext) unmarshalInputEducationInput(ctx context.Context, obj interface{}) (model.EducationInput, error) {
+	var it model.EducationInput
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "first_name":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("first_name"))
+			it.FirstName, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "last_name":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("last_name"))
+			it.LastName, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "start_date":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("start_date"))
+			it.StartDate, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "end_date":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("end_date"))
+			it.EndDate, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "institution":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("institution"))
+			it.Institution, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "subject":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("subject"))
+			it.Subject, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "notes":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notes"))
+			it.Notes, err = ec.unmarshalOString2ᚕᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputExperienceInput(ctx context.Context, obj interface{}) (model.ExperienceInput, error) {
 	var it model.ExperienceInput
 	var asMap = obj.(map[string]interface{})
@@ -3288,8 +4033,200 @@ func (ec *executionContext) unmarshalInputExperienceInput(ctx context.Context, o
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputUpdateMe(ctx context.Context, obj interface{}) (model.UpdateMe, error) {
-	var it model.UpdateMe
+func (ec *executionContext) unmarshalInputGetMeInput(ctx context.Context, obj interface{}) (model.GetMeInput, error) {
+	var it model.GetMeInput
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "first_name":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("first_name"))
+			it.FirstName, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "last_name":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("last_name"))
+			it.LastName, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputGoSkillsInput(ctx context.Context, obj interface{}) (model.GoSkillsInput, error) {
+	var it model.GoSkillsInput
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "first_name":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("first_name"))
+			it.FirstName, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "last_name":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("last_name"))
+			it.LastName, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "frameworks":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("frameworks"))
+			it.Frameworks, err = ec.unmarshalOString2ᚕᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "paradigms":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("paradigms"))
+			it.Paradigms, err = ec.unmarshalOString2ᚕᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "aws_services":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("aws_services"))
+			it.AwsServices, err = ec.unmarshalOString2ᚕᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "misc":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("misc"))
+			it.Misc, err = ec.unmarshalOString2ᚕᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputJSSkillsInput(ctx context.Context, obj interface{}) (model.JSSkillsInput, error) {
+	var it model.JSSkillsInput
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "first_name":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("first_name"))
+			it.FirstName, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "last_name":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("last_name"))
+			it.LastName, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "frameworks":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("frameworks"))
+			it.Frameworks, err = ec.unmarshalOString2ᚕᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "paradigms":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("paradigms"))
+			it.Paradigms, err = ec.unmarshalOString2ᚕᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "aws_services":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("aws_services"))
+			it.AwsServices, err = ec.unmarshalOString2ᚕᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "misc":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("misc"))
+			it.Misc, err = ec.unmarshalOString2ᚕᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputPythonSkillsInput(ctx context.Context, obj interface{}) (model.PythonSkillsInput, error) {
+	var it model.PythonSkillsInput
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "first_name":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("first_name"))
+			it.FirstName, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "last_name":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("last_name"))
+			it.LastName, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "frameworks":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("frameworks"))
+			it.Frameworks, err = ec.unmarshalOString2ᚕᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "misc":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("misc"))
+			it.Misc, err = ec.unmarshalOString2ᚕᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputUpdateMeInput(ctx context.Context, obj interface{}) (model.UpdateMeInput, error) {
+	var it model.UpdateMeInput
 	var asMap = obj.(map[string]interface{})
 
 	for k, v := range asMap {
@@ -3323,6 +4260,22 @@ func (ec *executionContext) unmarshalInputUpdateMe(ctx context.Context, obj inte
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("location"))
 			it.Location, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "interests":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("interests"))
+			it.Interests, err = ec.unmarshalOString2ᚕᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "about_me":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("about_me"))
+			it.AboutMe, err = ec.unmarshalOString2ᚕᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -3360,6 +4313,50 @@ func (ec *executionContext) _ContactInfo(ctx context.Context, sel ast.SelectionS
 			out.Values[i] = ec._ContactInfo_linkedIn(ctx, field, obj)
 		case "github":
 			out.Values[i] = ec._ContactInfo_github(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var educationImplementors = []string{"Education"}
+
+func (ec *executionContext) _Education(ctx context.Context, sel ast.SelectionSet, obj *model.Education) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, educationImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Education")
+		case "start_date":
+			out.Values[i] = ec._Education_start_date(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "end_date":
+			out.Values[i] = ec._Education_end_date(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "institution":
+			out.Values[i] = ec._Education_institution(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "subject":
+			out.Values[i] = ec._Education_subject(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "notes":
+			out.Values[i] = ec._Education_notes(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -3526,6 +4523,10 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Mutation")
+		case "AddEducation":
+			out.Values[i] = ec._Mutation_AddEducation(ctx, field)
+		case "RemoveEducation":
+			out.Values[i] = ec._Mutation_RemoveEducation(ctx, field)
 		case "UpdateExperience":
 			out.Values[i] = ec._Mutation_UpdateExperience(ctx, field)
 		case "RemoveExperience":
@@ -3565,6 +4566,49 @@ func (ec *executionContext) _Project(ctx context.Context, sel ast.SelectionSet, 
 			out.Values[i] = ec._Project_demo_link(ctx, field, obj)
 		case "description":
 			out.Values[i] = ec._Project_description(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var projectInputImplementors = []string{"ProjectInput"}
+
+func (ec *executionContext) _ProjectInput(ctx context.Context, sel ast.SelectionSet, obj *model.ProjectInput) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, projectInputImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ProjectInput")
+		case "first_name":
+			out.Values[i] = ec._ProjectInput_first_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "last_name":
+			out.Values[i] = ec._ProjectInput_last_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "name":
+			out.Values[i] = ec._ProjectInput_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "source_code":
+			out.Values[i] = ec._ProjectInput_source_code(ctx, field, obj)
+		case "demo_link":
+			out.Values[i] = ec._ProjectInput_demo_link(ctx, field, obj)
+		case "description":
+			out.Values[i] = ec._ProjectInput_description(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -3942,6 +4986,11 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
+func (ec *executionContext) unmarshalNGetMeInput2githubᚗcomᚋentegralᚋaboutmeᚋgraphᚋmodelᚐGetMeInput(ctx context.Context, v interface{}) (model.GetMeInput, error) {
+	res, err := ec.unmarshalInputGetMeInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {
 	res, err := graphql.UnmarshalString(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -4217,6 +5266,21 @@ func (ec *executionContext) marshalOContactInfo2ᚖgithubᚗcomᚋentegralᚋabo
 	return ec._ContactInfo(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalOEducation2ᚖgithubᚗcomᚋentegralᚋaboutmeᚋgraphᚋmodelᚐEducation(ctx context.Context, sel ast.SelectionSet, v *model.Education) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Education(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOEducationInput2ᚖgithubᚗcomᚋentegralᚋaboutmeᚋgraphᚋmodelᚐEducationInput(ctx context.Context, v interface{}) (*model.EducationInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputEducationInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) marshalOExperience2ᚕᚖgithubᚗcomᚋentegralᚋaboutmeᚋgraphᚋmodelᚐExperience(ctx context.Context, sel ast.SelectionSet, v []*model.Experience) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
@@ -4414,11 +5478,11 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 	return graphql.MarshalString(*v)
 }
 
-func (ec *executionContext) unmarshalOUpdateMe2ᚖgithubᚗcomᚋentegralᚋaboutmeᚋgraphᚋmodelᚐUpdateMe(ctx context.Context, v interface{}) (*model.UpdateMe, error) {
+func (ec *executionContext) unmarshalOUpdateMeInput2ᚖgithubᚗcomᚋentegralᚋaboutmeᚋgraphᚋmodelᚐUpdateMeInput(ctx context.Context, v interface{}) (*model.UpdateMeInput, error) {
 	if v == nil {
 		return nil, nil
 	}
-	res, err := ec.unmarshalInputUpdateMe(ctx, v)
+	res, err := ec.unmarshalInputUpdateMeInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 

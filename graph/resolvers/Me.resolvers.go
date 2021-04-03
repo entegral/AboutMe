@@ -6,6 +6,7 @@ package resolvers
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/entegral/aboutme/auth"
 	e "github.com/entegral/aboutme/errors"
@@ -13,27 +14,29 @@ import (
 	"github.com/entegral/aboutme/graph/model"
 )
 
-func (r *mutationResolver) UpdateInfo(ctx context.Context, key string, info *model.UpdateMe) (*model.Me, error) {
+func (r *mutationResolver) UpdateInfo(ctx context.Context, key string, info *model.UpdateMeInput) (*model.Me, error) {
 	if !auth.CheckKey(key) {
 		return nil, errors.New("invalid key")
 	}
-	var user model.Me
-	user.FirstName = info.FirstName
-	user.LastName = info.LastName
-	user.Title = info.Title
-	user.Location = info.Location
-	user.Save()
-	return &user, nil
+	user, err := info.Update()
+	if e.Warn("error occured in UpdateInfo", err) {
+		return nil, err
+	}
+	return user, nil
 }
 
 func (r *queryResolver) AboutMe(ctx context.Context) (*model.Me, error) {
-	return r.About(ctx, "robby", "bruce")
+	input := model.GetMeInput{
+		FirstName: "robby",
+		LastName:  "bruce",
+	}
+	return r.About(ctx, input)
 }
 
-func (r *queryResolver) About(ctx context.Context, firstName string, lastName string) (*model.Me, error) {
-	var input model.CompositeKey
-	val, err := input.GetMe(lastName, firstName)
-	if e.Warn("Error fetching RobbyBruce aboutme data", err) {
+func (r *queryResolver) About(ctx context.Context, input model.GetMeInput) (*model.Me, error) {
+	val, err := input.GetMe()
+	errMsg := fmt.Sprintf("Error fetching %s %s's general info", input.FirstName, input.LastName)
+	if e.Warn(errMsg, err) {
 		return nil, err
 	}
 	return val, nil

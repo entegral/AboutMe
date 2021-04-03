@@ -17,8 +17,34 @@ type PythonSkills {
   misc: [String]
 }
 
+input JSSkillsInput {
+  first_name: String!
+  last_name: String!
+  frameworks: [String]
+  paradigms: [String]
+  aws_services: [String]
+  misc: [String]
+}
+
+input GoSkillsInput {
+  first_name: String!
+  last_name: String!
+  frameworks: [String]
+  paradigms: [String]
+  aws_services: [String]
+  misc: [String]
+}
+
+input PythonSkillsInput {
+  first_name: String!
+  last_name: String!
+  frameworks: [String]
+  misc: [String]
+}
+
 type Skills {
   JS: JSSkills
   Go: GoSkills
   Python: PythonSkills
 }
+

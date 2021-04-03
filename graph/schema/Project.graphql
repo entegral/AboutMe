@@ -4,3 +4,12 @@ type Project {
   demo_link: String
   description: String
 }
+
+type ProjectInput {
+  first_name: String!
+  last_name: String!
+  name: String!
+  source_code: String
+  demo_link: String
+  description: String  
+}
