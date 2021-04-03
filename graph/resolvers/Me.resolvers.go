@@ -14,16 +14,12 @@ import (
 	"github.com/entegral/aboutme/graph/model"
 )
 
-func (r *meResolver) Experience(ctx context.Context, obj *model.Me) ([]*model.Experience, error) {
-	panic(fmt.Errorf("not implemented"))
-}
-
-func (r *mutationResolver) UpdateInfo(ctx context.Context, key string, info *model.UpdateMeInput) (*model.Me, error) {
+func (r *mutationResolver) UpdateInfo(ctx context.Context, key string, input *model.UpdateMeInput) (*model.Me, error) {
 	if !auth.CheckKey(key) {
 		return nil, errors.New("invalid key")
 	}
-	user, err := info.Update()
-	if e.Warn("error occured in UpdateInfo", err) {
+	user, err := input.Update()
+	if e.Warn("error occurred in UpdateInfo", err) {
 		return nil, err
 	}
 	return user, nil
@@ -46,11 +42,15 @@ func (r *queryResolver) About(ctx context.Context, input model.GetMeInput) (*mod
 	return val, nil
 }
 
-// Me returns generated.MeResolver implementation.
-func (r *Resolver) Me() generated.MeResolver { return &meResolver{r} }
-
 // Query returns generated.QueryResolver implementation.
 func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 
-type meResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
+
+// !!! WARNING !!!
+// The code below was going to be deleted when updating resolvers. It has been copied here so you have
+// one last chance to move it out of harms way if you want. There are two reasons this happens:
+//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
+//    it when you're done.
+//  - You have helper methods in this file. Move them out to keep these resolver files clean.
+type meResolver struct{ *Resolver }

@@ -6,7 +6,17 @@ type Experience {
   responsibilities: [String]
 }
 
+input ExperienceKeyInput {
+  first_name: String!
+  last_name: String!
+  title: String!
+  company: String!
+}
+
 input ExperienceInput {
+  first_name: String!
+  last_name: String!
+  position: Int!
   start_date: String
   end_date: String
   title: String!
@@ -15,6 +25,6 @@ input ExperienceInput {
 }
 
 extend type Mutation {
-  UpdateExperience(key: String!, item: ExperienceInput): Experience
-  RemoveExperience(key: String!, company: String, title: String): Experience
+  UpdateExperience(key: String!, input: ExperienceInput!): Experience
+  RemoveExperience(key: String!, input: ExperienceKeyInput!): Experience
 }

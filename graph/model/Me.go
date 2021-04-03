@@ -121,3 +121,15 @@ func (m UpdateMeInput) Update() (*Me, error) {
 	}
 	return &row, nil
 }
+
+func (m Me) Experience() ([]*Experience, error) {
+	input := ExperienceInput{
+		FirstName: m.FirstName,
+		LastName: m.LastName,
+	}
+	res, err := input.Query()
+	if e.Warn("error looking up experience record of 'me' object", err) {
+		return nil, err
+	}
+	return res, nil
+}
