@@ -14,6 +14,10 @@ import (
 	"github.com/entegral/aboutme/graph/model"
 )
 
+func (r *meResolver) Experience(ctx context.Context, obj *model.Me) ([]*model.Experience, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
 func (r *mutationResolver) UpdateInfo(ctx context.Context, key string, info *model.UpdateMeInput) (*model.Me, error) {
 	if !auth.CheckKey(key) {
 		return nil, errors.New("invalid key")
@@ -34,7 +38,7 @@ func (r *queryResolver) AboutMe(ctx context.Context) (*model.Me, error) {
 }
 
 func (r *queryResolver) About(ctx context.Context, input model.GetMeInput) (*model.Me, error) {
-	val, err := input.GetMe()
+	val, err := input.Get()
 	errMsg := fmt.Sprintf("Error fetching %s %s's general info", input.FirstName, input.LastName)
 	if e.Warn(errMsg, err) {
 		return nil, err
@@ -42,7 +46,11 @@ func (r *queryResolver) About(ctx context.Context, input model.GetMeInput) (*mod
 	return val, nil
 }
 
+// Me returns generated.MeResolver implementation.
+func (r *Resolver) Me() generated.MeResolver { return &meResolver{r} }
+
 // Query returns generated.QueryResolver implementation.
 func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 
+type meResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }

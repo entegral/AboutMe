@@ -41,7 +41,6 @@ type Me struct {
 	Location        *string       `json:"location,omitempty"`
 	Interests       []*string     `json:"interests,omitempty"`
 	AboutMe         []*string     `json:"about_me,omitempty"`
-	Experience      []*Experience `json:"experience,omitempty"`
 	ExampleProjects []*Project    `json:"example_projects,omitempty"`
 	Skills          *Skills       `json:"skills,omitempty"`
 	Contact         *ContactInfo  `json:"contact,omitempty"`
@@ -70,7 +69,7 @@ func MeKey(lastname string, firstname string) map[string]*dynamodb.AttributeValu
 
 // Getter functions
 // these functions receive input and return return types
-func (input GetMeInput) GetMe() (*Me, error) {
+func (input GetMeInput) Get() (*Me, error) {
 	var m Me
 	params := dynamodb.GetItemInput{
 		TableName: MeTableName(),

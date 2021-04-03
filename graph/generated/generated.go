@@ -8,6 +8,7 @@ import (
 	"errors"
 	"strconv"
 	"sync"
+	"sync/atomic"
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
@@ -34,6 +35,7 @@ type Config struct {
 }
 
 type ResolverRoot interface {
+	Me() MeResolver
 	Mutation() MutationResolver
 	Query() QueryResolver
 }
@@ -132,6 +134,9 @@ type ComplexityRoot struct {
 	}
 }
 
+type MeResolver interface {
+	Experience(ctx context.Context, obj *model.Me) ([]*model.Experience, error)
+}
 type MutationResolver interface {
 	AddEducation(ctx context.Context, key string, info *model.EducationInput) (*model.Education, error)
 	RemoveEducation(ctx context.Context, firstName string, lastName string) (*model.Education, error)
@@ -626,7 +631,6 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 var sources = []*ast.Source{
 	{Name: "graph/schema/ContactInfo.graphql", Input: `type  ContactInfo {
   email: String!
-  
   linkedIn: String
   github: String
 }`, BuiltIn: false},
@@ -1880,14 +1884,14 @@ func (ec *executionContext) _Me_experience(ctx context.Context, field graphql.Co
 		Object:     "Me",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Experience, nil
+		return ec.resolvers.Me().Experience(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -4474,12 +4478,12 @@ func (ec *executionContext) _Me(ctx context.Context, sel ast.SelectionSet, obj *
 		case "first_name":
 			out.Values[i] = ec._Me_first_name(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "last_name":
 			out.Values[i] = ec._Me_last_name(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "title":
 			out.Values[i] = ec._Me_title(ctx, field, obj)
@@ -4490,7 +4494,16 @@ func (ec *executionContext) _Me(ctx context.Context, sel ast.SelectionSet, obj *
 		case "about_me":
 			out.Values[i] = ec._Me_about_me(ctx, field, obj)
 		case "experience":
-			out.Values[i] = ec._Me_experience(ctx, field, obj)
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Me_experience(ctx, field, obj)
+				return res
+			})
 		case "example_projects":
 			out.Values[i] = ec._Me_example_projects(ctx, field, obj)
 		case "skills":
