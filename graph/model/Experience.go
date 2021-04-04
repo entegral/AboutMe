@@ -124,6 +124,7 @@ const (
 	layoutISO = "2006-01-02"
 	layoutUS  = "January 2, 2006"
 )
+
 func (input ExperienceInput) Update() (*Experience, error) {
 	updateExpression := expression.Set(expression.Name("fName"), expression.Value(input.FirstName))
 	updateExpression.Set(expression.Name("lName"), expression.Value(input.LastName))
