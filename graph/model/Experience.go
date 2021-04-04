@@ -71,7 +71,7 @@ func (input ExperienceInput) Get() (*Experience, error) {
 	if e.Warn("error in Experience.Get.GetItem", err) {
 		return nil, err
 	}
-	logrus.Println(out.Item)
+	logrus.Debug("experience get", out.Item)
 	if len(out.Item) == 0 {
 		return nil, nil
 	}
@@ -108,7 +108,7 @@ func (input ExperienceInput) Query() ([]*Experience, error) {
 	if e.Warn("error in Experience.Get.Query", err) {
 		return nil, err
 	}
-	logrus.Println(out.Items)
+	logrus.Debug("experience output items", out.Items)
 	if len(out.Items) == 0 {
 		return nil, nil
 	}
@@ -116,8 +116,8 @@ func (input ExperienceInput) Query() ([]*Experience, error) {
 		var ex Experience
 		err = dynamodbattribute.UnmarshalMap(item, &ex)
 		if e.Warn("error in Experience.Query.UnmarshalMap loop", err) {
-			logrus.Println("error item:", item)
-			logrus.Println("error iterant:", i)
+			logrus.Warn("error item:", item)
+			logrus.Warn("error iterant:", i)
 		}
 		experiences = append(experiences, &ex)
 	}
