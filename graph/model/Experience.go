@@ -58,9 +58,13 @@ func ExperienceKey(lastname string, firstname string, startDate string) map[stri
 
 func (input ExperienceInput) Get() (*Experience, error) {
 	var ex Experience
+	t, timeErr := convertDateFormat(input.StartDate)
+	if e.Warn("bad start time input provided", timeErr) {
+		return nil, timeErr
+	}
 	params := dynamodb.GetItemInput{
 		TableName: MeTableName(),
-		Key: ExperienceKey(input.LastName, input.FirstName, input.StartDate),
+		Key: ExperienceKey(input.LastName, input.FirstName, t.Format(layoutISO)),
 	}
 	logrus.Warn("params", params)
 	out, err := clientmanager.ClientMap["default"].Dynamo.GetItem(&params)
