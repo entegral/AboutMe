@@ -75,12 +75,12 @@ func (input GetMeInput) Get() (*Me, error) {
 		TableName: MeTableName(),
 		Key: MeKey(input.LastName, input.FirstName),
 	}
-	logrus.Warn("params", params)
+	logrus.Debug("params", params)
 	out, err := clientmanager.ClientMap["default"].Dynamo.GetItem(&params)
 	if e.Warn("aboutme.Me.Get.GetItem", err) {
 		return nil, err
 	}
-	logrus.Println(out.Item)
+	logrus.Debug(out.Item)
 	if len(out.Item) == 0 {
 		return nil, nil
 	}
@@ -109,7 +109,7 @@ func (m UpdateMeInput) Update() (*Me, error) {
 		ExpressionAttributeValues: expr.Values(),
 		ReturnValues: aws.String("ALL_NEW"),
 	}
-	logrus.Warn("params", params)
+	logrus.Debug("params", params)
 	var row Me
 	out, err2 := clientmanager.ClientMap["default"].Dynamo.UpdateItem(&params)
 	if e.Warn("Save.UpdateItem", err2) {

@@ -36,10 +36,10 @@ func Handler(ctx context.Context, req Request) (Response, error) {
 		"body": req.Body,
 		"path": req.Path,
 		"method": req.HTTPMethod,
-	}).Warnf("request: %+v", req)
+	}).Debugf("request: %+v", req)
 
 	if req.Path =="/" && req.HTTPMethod == "GET" {
-		logrus.Warnln("inside get route, querying playground")
+		logrus.Debugln("inside get route, querying playground")
 		rsp, err := ApiGatewayPlayground.ProxyWithContext(ctx, events.APIGatewayProxyRequest(req))
 		if errors.Warn("main.Handler.GET", err) {
 			return Response{
