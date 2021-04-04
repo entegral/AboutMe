@@ -41,7 +41,7 @@ func ContactInfoKey(lastname string, firstname string) map[string]*dynamodb.Attr
 		Sk: fmt.Sprintf("contact_info"),
 	}
 	key, err := dynamodbattribute.MarshalMap(compKey)
-	if e.Warn("aboutme.Me.ReturnKey.MarshalMap", err) {
+	if e.Warn("ContactInfo.ContactInfoKey.MarshalMap", err) {
 		return nil
 	}
 	return key

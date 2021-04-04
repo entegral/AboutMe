@@ -60,7 +60,7 @@ func MeKey(lastname string, firstname string) map[string]*dynamodb.AttributeValu
 		Sk: fmt.Sprintf("general_info"),
 	}
 	key, err := dynamodbattribute.MarshalMap(compKey)
-	if e.Warn("aboutme.Me.ReturnKey.MarshalMap", err) {
+	if e.Warn("aboutme.Me.MeKey.MarshalMap", err) {
 		return nil
 	}
 	return key
