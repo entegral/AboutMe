@@ -672,11 +672,10 @@ input ExperienceKeyInput {
 input ExperienceInput {
   first_name: String!
   last_name: String!
-  position: Int!
-  start_date: String
+  start_date: String!
   end_date: String
-  title: String!
-  company: String!
+  title: String
+  company: String
   responsibilities: [String]
 }
 
@@ -4003,19 +4002,11 @@ func (ec *executionContext) unmarshalInputExperienceInput(ctx context.Context, o
 			if err != nil {
 				return it, err
 			}
-		case "position":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("position"))
-			it.Position, err = ec.unmarshalNInt2int(ctx, v)
-			if err != nil {
-				return it, err
-			}
 		case "start_date":
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("start_date"))
-			it.StartDate, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			it.StartDate, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -4031,7 +4022,7 @@ func (ec *executionContext) unmarshalInputExperienceInput(ctx context.Context, o
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("title"))
-			it.Title, err = ec.unmarshalNString2string(ctx, v)
+			it.Title, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -4039,7 +4030,7 @@ func (ec *executionContext) unmarshalInputExperienceInput(ctx context.Context, o
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("company"))
-			it.Company, err = ec.unmarshalNString2string(ctx, v)
+			it.Company, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -5067,21 +5058,6 @@ func (ec *executionContext) unmarshalNExperienceKeyInput2githubᚗcomᚋentegral
 func (ec *executionContext) unmarshalNGetMeInput2githubᚗcomᚋentegralᚋaboutmeᚋgraphᚋmodelᚐGetMeInput(ctx context.Context, v interface{}) (model.GetMeInput, error) {
 	res, err := ec.unmarshalInputGetMeInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}) (int, error) {
-	res, err := graphql.UnmarshalInt(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.SelectionSet, v int) graphql.Marshaler {
-	res := graphql.MarshalInt(v)
-	if res == graphql.Null {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "must not be null")
-		}
-	}
-	return res
 }
 
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {

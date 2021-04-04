@@ -16,11 +16,10 @@ input ExperienceKeyInput {
 input ExperienceInput {
   first_name: String!
   last_name: String!
-  position: Int!
-  start_date: String
+  start_date: String!
   end_date: String
-  title: String!
-  company: String!
+  title: String
+  company: String
   responsibilities: [String]
 }
 

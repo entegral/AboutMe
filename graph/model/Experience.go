@@ -1,8 +1,10 @@
 package model
 
 import (
+	"errors"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
@@ -25,11 +27,10 @@ type Experience struct {
 type ExperienceInput struct {
 	FirstName       string        `json:"fName"`
 	LastName        string        `json:"lName"`
-	Position        int        `json:"position"`
-	StartDate        *string   `json:"start_date"`
+	StartDate       string   `json:"start_date"`
 	EndDate          *string   `json:"end_date"`
-	Title            string    `json:"title"`
-	Company          string    `json:"company"`
+	Title            *string    `json:"title"`
+	Company          *string    `json:"company"`
 	Responsibilities []*string `json:"responsibilities"`
 }
 
@@ -40,19 +41,14 @@ func ExperienceTableName() *string {
 	return aws.String("no tablename configured")
 }
 
-func ExperienceCompKey(lastname string, firstname string, position *int) CompositeKey {
-	sk := "experience"
-	if position != nil && *position != 0 {
-		logrus.Warn(*position)
-		sk += fmt.Sprintf(" > position:%v", *position)
-	}
+func ExperienceCompKey(lastname string, firstname string, startDate string) CompositeKey {
 	return CompositeKey{
 		Pk: fmt.Sprintf("lName:%s > fName:%s", lastname, firstname),
-		Sk: sk,
+		Sk: fmt.Sprintf("experience > startDate:%v", startDate),
 	}
 }
-func ExperienceKey(lastname string, firstname string, position *int) map[string]*dynamodb.AttributeValue {
-	compKey := ExperienceCompKey(lastname, firstname, position)
+func ExperienceKey(lastname string, firstname string, startDate string) map[string]*dynamodb.AttributeValue {
+	compKey := ExperienceCompKey(lastname, firstname, startDate)
 	key, err := dynamodbattribute.MarshalMap(compKey)
 	if e.Warn("error occurred during marshalling of experience key", err) {
 		return nil
@@ -64,7 +60,7 @@ func (input ExperienceInput) Get() (*Experience, error) {
 	var ex Experience
 	params := dynamodb.GetItemInput{
 		TableName: MeTableName(),
-		Key: ExperienceKey(input.LastName, input.FirstName, &input.Position),
+		Key: ExperienceKey(input.LastName, input.FirstName, input.StartDate),
 	}
 	logrus.Warn("params", params)
 	out, err := clientmanager.ClientMap["default"].Dynamo.GetItem(&params)
@@ -82,16 +78,26 @@ func (input ExperienceInput) Get() (*Experience, error) {
 	return &ex, err
 }
 
+func convertDateFormat(date string) (*time.Time, error) {
+	t, err := time.Parse(layoutUS, date)
+	if err != nil {
+		return nil, errors.New("Start/End dates must be provided in following format: 'Month Day, Year'")
+	}
+	return &t, nil
+}
+
 func (input ExperienceInput) Query() ([]*Experience, error) {
 	var experiences []*Experience
-	compKey := ExperienceCompKey(input.LastName, input.FirstName, &input.Position)
+
+	compKey := ExperienceCompKey(input.LastName, input.FirstName, input.StartDate)
 	params := dynamodb.QueryInput{
 		TableName: MeTableName(),
 		KeyConditionExpression: aws.String("pk = :pk and begins_with(sk, :sk)"),
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":pk": {S: &compKey.Pk},
 			":sk": {S: &compKey.Sk},
-		}, 
+		},
+		ScanIndexForward: aws.Bool(false),
 	}
 	logrus.Warn("params", params)
 	out, err := clientmanager.ClientMap["default"].Dynamo.Query(&params)
@@ -114,23 +120,41 @@ func (input ExperienceInput) Query() ([]*Experience, error) {
 	logrus.Warn("Found experiences", experiences)
 	return experiences, err
 }
-
+const (
+	layoutISO = "2006-01-02"
+	layoutUS  = "January 2, 2006"
+)
 func (input ExperienceInput) Update() (*Experience, error) {
-	
 	updateExpression := expression.Set(expression.Name("fName"), expression.Value(input.FirstName))
 	updateExpression.Set(expression.Name("lName"), expression.Value(input.LastName))
-	updateExpression.Set(expression.Name("title"), expression.Value(input.Title))
-	updateExpression.Set(expression.Name("company"), expression.Value(input.Company))
-	updateExpression.Set(expression.Name("responsibilities"), expression.Value(input.Responsibilities))
 	updateExpression.Set(expression.Name("start_date"), expression.Value(input.StartDate))
-	updateExpression.Set(expression.Name("end_date"), expression.Value(input.EndDate))
+	if input.Title != nil && *input.Title != "" {
+		updateExpression.Set(expression.Name("title"), expression.Value(input.Title))
+	}
+	if input.Company != nil && *input.Company != "" {
+		updateExpression.Set(expression.Name("company"), expression.Value(input.Company))
+	}
+	if len(input.Responsibilities) != 0 {
+		updateExpression.Set(expression.Name("responsibilities"), expression.Value(input.Responsibilities))
+	}
+	if input.EndDate != nil &&  *input.EndDate != "" {
+		_, endDateErr := convertDateFormat(*	input.EndDate)
+		if e.Warn("error parsing end date", endDateErr) {
+			return nil, endDateErr
+		}
+		updateExpression.Set(expression.Name("end_date"), expression.Value(input.EndDate))
+	}
 	builder := expression.NewBuilder().WithUpdate(updateExpression)
 	expr, err := builder.Build()
-	if e.Warn("Me.Save.BuildExpression", err) {
+	if e.Warn("Me.Update.BuildExpression", err) {
 		return nil, err
 	}
+	t, timeErr := convertDateFormat(input.StartDate)
+	if e.Warn("bad start time input provided", timeErr) {
+		return nil, timeErr
+	}
 	params := dynamodb.UpdateItemInput{
-		Key: ExperienceKey(input.LastName, input.FirstName, &input.Position),
+		Key: ExperienceKey(input.LastName, input.FirstName, t.Format(layoutISO)),
 		TableName: MeTableName(),
 		UpdateExpression: expr.Update(),
 		ExpressionAttributeNames: expr.Names(),
