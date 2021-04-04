@@ -3,3 +3,18 @@ type  ContactInfo {
   linkedIn: String
   github: String
 }
+
+input  ContactInfoInput {
+  first_name: String!
+  last_name: String!
+  email: String
+  linkedIn: String
+  github: String
+}
+
+extend type Mutation {
+  UpdateContactInfo(
+    key: String!
+    input: ContactInfoInput!
+  ): ContactInfo
+}

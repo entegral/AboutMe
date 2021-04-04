@@ -19,7 +19,6 @@ import (
 var ApiGatewayAdapter *handlerfunc.HandlerFuncAdapter
 var ApiGatewayPlayground *handlerfunc.HandlerFuncAdapter
 
-// Response is of type APIGatewayProxyResponse since we're leveraging the
 type Response events.APIGatewayProxyResponse
 type Request events.APIGatewayProxyRequest
 
@@ -30,7 +29,7 @@ func init() {
 	ApiGatewayPlayground = handlerfunc.New(playground.Handler("Playground", "/"))
 }
 
-// Handler is our lambda handler invoked by the `lambda.Start` function call
+// Handler receives the event from lambda.Start and processes the request
 func Handler(ctx context.Context, req Request) (Response, error) {
 	logrus.WithFields(logrus.Fields{
 		"body": req.Body,
@@ -61,7 +60,7 @@ func Handler(ctx context.Context, req Request) (Response, error) {
 	}
 	
 	return Response{
-		StatusCode: 500,
+		StatusCode: 400,
 		Body: "endpoint only supports GET request on '/' path and POST request on '/query' path",
 	}, nil
 }

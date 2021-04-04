@@ -43,7 +43,6 @@ type Me struct {
 	AboutMe         []*string     `json:"about_me,omitempty"`
 	ExampleProjects []*Project    `json:"example_projects,omitempty"`
 	Skills          *Skills       `json:"skills,omitempty"`
-	Contact         *ContactInfo  `json:"contact,omitempty"`
 }
 
 // type helper functions
@@ -129,6 +128,18 @@ func (m Me) Experience() ([]*Experience, error) {
 	}
 	res, err := input.Query()
 	if e.Warn("error looking up experience record of 'me' object", err) {
+		return nil, err
+	}
+	return res, nil
+}
+
+func (m Me) Contact() (*ContactInfo, error) {
+	input := ContactInfoInput{
+		FirstName: m.FirstName,
+		LastName: m.LastName,
+	}
+	res, err := input.Get()
+	if e.Warn("error looking up contact info record of 'me' object", err) {
 		return nil, err
 	}
 	return res, nil
