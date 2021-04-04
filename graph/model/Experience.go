@@ -66,7 +66,7 @@ func (input ExperienceInput) Get() (*Experience, error) {
 		TableName: MeTableName(),
 		Key: ExperienceKey(input.LastName, input.FirstName, t.Format(layoutISO)),
 	}
-	logrus.Warn("params", params)
+	logrus.Debug("params", params)
 	out, err := clientmanager.ClientMap["default"].Dynamo.GetItem(&params)
 	if e.Warn("error in Experience.Get.GetItem", err) {
 		return nil, err
@@ -103,7 +103,7 @@ func (input ExperienceInput) Query() ([]*Experience, error) {
 		},
 		ScanIndexForward: aws.Bool(false),
 	}
-	logrus.Warn("params", params)
+	logrus.Debug("params", params)
 	out, err := clientmanager.ClientMap["default"].Dynamo.Query(&params)
 	if e.Warn("error in Experience.Get.Query", err) {
 		return nil, err
@@ -121,7 +121,7 @@ func (input ExperienceInput) Query() ([]*Experience, error) {
 		}
 		experiences = append(experiences, &ex)
 	}
-	logrus.Warn("Found experiences", experiences)
+	logrus.Debug("Found experiences", experiences)
 	return experiences, err
 }
 const (
@@ -166,7 +166,7 @@ func (input ExperienceInput) Update() (*Experience, error) {
 		ExpressionAttributeValues: expr.Values(),
 		ReturnValues: aws.String("ALL_NEW"),
 	}
-	logrus.Warn("params", params)
+	logrus.Debug("params", params)
 	var row Experience
 	out, err2 := clientmanager.ClientMap["default"].Dynamo.UpdateItem(&params)
 	if e.Warn("error updating Experience record", err2) {
