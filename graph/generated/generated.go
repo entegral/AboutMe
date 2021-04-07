@@ -1996,14 +1996,14 @@ func (ec *executionContext) _Me_skills(ctx context.Context, field graphql.Collec
 		Object:     "Me",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   false,
+		IsMethod:   true,
 		IsResolver: false,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Skills, nil
+		return obj.Skills()
 	})
 	if err != nil {
 		ec.Error(ctx, err)

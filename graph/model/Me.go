@@ -42,7 +42,6 @@ type Me struct {
 	Interests       []*string     `json:"interests,omitempty"`
 	AboutMe         []*string     `json:"about_me,omitempty"`
 	ExampleProjects []*Project    `json:"example_projects,omitempty"`
-	Skills          *Skills       `json:"skills,omitempty"`
 }
 
 // type helper functions
@@ -144,3 +143,17 @@ func (m Me) Contact() (*ContactInfo, error) {
 	}
 	return res, nil
 }
+
+func (m Me) Skills() (*Skills, error) {
+	input := SkillsInput{
+		FirstName: m.FirstName,
+		LastName: m.LastName,
+	}
+	logrus.Info("0")
+	res, err := input.Get()
+	if e.Warn("error looking up contact info record of 'me' object", err) {
+		return nil, err
+	}
+	return res, nil
+}
+
